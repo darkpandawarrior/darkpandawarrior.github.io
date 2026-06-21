@@ -274,8 +274,8 @@
         <div class="meta"><h4>Feature navigation</h4><p>Moving across Travel, Approvals, Payables and Spends — each its own isolated module.</p></div>
       </div>
       <div class="video-card">
-        <div class="frame"><img src="assets/screenshots/live_tracking.png" alt="Live trip tracking" loading="lazy"></div>
-        <div class="meta"><h4>Live trip tracking</h4><p>Foreground-service trip recording with a live distance counter and route trace.</p></div>
+        <div class="frame"><span class="live-pill">● Rec</span><video src="assets/video/clipC_tracking.mp4" poster="assets/screenshots/live_tracking.png" muted loop autoplay playsinline></video></div>
+        <div class="meta"><h4>Live trip tracking</h4><p>A live journey — compass, speed, distance &amp; duration updating in real time on the foreground-service tracker.</p></div>
       </div>
     </div>
   </div>
@@ -566,6 +566,10 @@ flowchart LR
       body:'A root / device-integrity guard surfaces detected signals and a clean-device confirmation — the security primitive behind encryption-ready storage.',
       points:['Root-signal detection','Clean vs detected states','Encryption-ready storage'],
       chips:['Security','core:security'] },
+    { key:'search', tab:'Master search', title:'Master search', tag:'feature:search · core:data', shot:'search_masterSearch_results.png',
+      body:'One query fans out across every feature module — trips, expenses, approvals, payables, payments, events and more — then merges, dedupes and ranks the results. Each feature contributes a SearchProvider; the aggregator never knows the features exist.',
+      points:['SearchProvider registry (Koin getAll)','Concurrent fan-out + dedup by (type,id)','Scope tabs + type filters','Per-provider failure isolation'],
+      chips:['Registry pattern','Coroutines','MVI'] },
   ];
 
   const tabsEl = document.getElementById('featTabs');
@@ -602,7 +606,7 @@ flowchart LR
     'geo_check_in.png','log_miles_step1.png','home_screen_loaded.png','approvals_pending.png','hardware_events.png',
     'check_in_history.png','saved_tracks_journeys_tab.png','payments_history_screen.png','create_event_screen.png',
     'booking_history_screen.png','trip_history_screen.png','root_guard_detected.png','track_detail.png',
-    'payables_list_matrix.png','events_history_screen.png'];
+    'payables_list_matrix.png','events_history_screen.png','search_masterSearch_results.png','search_masterSearch_empty.png'];
   const galleryEl = document.getElementById('gallery');
   GALLERY.forEach(name => {
     const img = document.createElement('img');
