@@ -188,6 +188,34 @@
   footer { padding: 28px 0; text-align: center; color: var(--faint); font-size: .78rem; border-top: 1px solid var(--line); }
   footer a { color: var(--accent); text-decoration: none; }
 
+  /* Themes showcase */
+  .theme-note { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; font-size: .85rem; color: var(--muted); background: rgba(61,220,132,.05); border: 1px solid var(--line); border-radius: 999px; padding: 7px 15px; }
+  .theme-note .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (min-width: 760px) { .theme-grid { grid-template-columns: repeat(4, 1fr); } }
+  .theme-card { background: var(--card); border: 1px solid var(--line); border-radius: 1.1rem; overflow: hidden; transition: border-color .2s, transform .2s; }
+  .theme-card:hover { border-color: rgba(61,220,132,.5); transform: translateY(-4px); }
+  .theme-card img { width: 100%; display: block; aspect-ratio: 4 / 3; object-fit: cover; object-position: top; background: var(--ink); cursor: zoom-in; }
+  .theme-card .meta { padding: 13px 16px; }
+  .theme-card .meta h4 { font-size: .98rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .theme-card .meta h4 .swatch { width: 12px; height: 12px; border-radius: 4px; border: 1px solid rgba(255,255,255,.15); flex: none; }
+  .theme-card .meta p { color: var(--muted); font-size: .8rem; margin-top: 4px; }
+
+  /* Source link on feature cards */
+  .feat-body .src-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 18px; font-size: .82rem; color: var(--accent); text-decoration: none; font-family: var(--mono); border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; transition: border-color .2s, background .2s; }
+  .feat-body .src-link:hover { border-color: var(--accent); background: rgba(61,220,132,.06); }
+
+  /* Explore-more band */
+  .explore-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 640px) { .explore-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 940px) { .explore-grid { grid-template-columns: repeat(3, 1fr); } }
+  .explore-card { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 1rem; padding: 20px 22px; text-decoration: none; transition: border-color .2s, transform .2s; }
+  .explore-card:hover { border-color: rgba(61,220,132,.5); transform: translateY(-3px); }
+  .explore-card .ic { font-size: 1.2rem; }
+  .explore-card h4 { font-size: 1rem; font-weight: 600; color: var(--text); margin: 8px 0 4px; }
+  .explore-card p { color: var(--muted); font-size: .85rem; line-height: 1.5; }
+  .explore-card .go { color: var(--accent); font-size: .8rem; font-weight: 600; margin-top: 10px; display: inline-block; }
+
   /* Reveal */
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
   .reveal.in { opacity: 1; transform: none; }
@@ -203,6 +231,7 @@
   <div class="wrap-wide">
     <a class="logo" href="/"><img src="assets/brand/mileway-icon.svg" alt="">Mileway</a>
     <div class="nav-links">
+      <a href="#themes">Themes</a>
       <a href="#demos">Demos</a>
       <a href="#features">Features</a>
       <a href="#architecture">Architecture</a>
@@ -233,11 +262,11 @@
         <div class="demo-phone">
           <div class="notch"></div>
           <div class="demo-screen" id="demoScreen">
-            <img class="on" src="assets/screenshots/live_tracking.png" alt="">
-            <img src="assets/screenshots/route_map.png" alt="">
-            <img src="assets/screenshots/track_insights.png" alt="">
-            <img src="assets/screenshots/ocr.png" alt="">
-            <img src="assets/screenshots/approvals_pending.png" alt="">
+            <img class="on" src="assets/screenshots/track_miles_idle_screen.png" alt="">
+            <img src="assets/screenshots/location_map_screen.png" alt="">
+            <img src="assets/screenshots/track_insights_screen.png" alt="">
+            <img src="assets/screenshots/media_attachment_preview_screen.png" alt="">
+            <img src="assets/screenshots/approvals_screen_pending_tab.png" alt="">
             <img src="assets/screenshots/home_screen_loaded.png" alt="">
           </div>
         </div>
@@ -256,6 +285,36 @@
   </div>
 </div>
 
+<!-- THEMES -->
+<section id="themes" class="banded">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">Make it yours</div>
+      <h2>A four-theme system, built in</h2>
+      <p class="sec-sub">Mileway ships a persisted in-app theme picker — pick a look once and it survives restarts. The deep-dark <strong style="color:var(--text)">Matrix</strong> palette is the default; a true-black AMOLED mode, a cyan accent and a clean light theme round it out, all driven by one Compose Multiplatform theme engine.</p>
+      <p class="theme-note"><span class="dot"></span> Persisted via DataStore · applied app-wide through a single <span style="font-family:var(--mono);font-size:.9em">MaterialTheme</span> token set</p>
+    </div>
+    <div class="theme-grid reveal">
+      <div class="theme-card">
+        <img src="assets/screenshots/theme_picker_matrix.png" alt="Matrix theme — deep-dark green, the default" loading="lazy">
+        <div class="meta"><h4><span class="swatch" style="background:#3ddc84"></span>Matrix</h4><p>Default · deep-dark green</p></div>
+      </div>
+      <div class="theme-card">
+        <img src="assets/screenshots/theme_picker_amoled.png" alt="Amoled theme — true black" loading="lazy">
+        <div class="meta"><h4><span class="swatch" style="background:#000"></span>Amoled</h4><p>True-black · OLED-friendly</p></div>
+      </div>
+      <div class="theme-card">
+        <img src="assets/screenshots/theme_picker_ion.png" alt="Ion theme — cyan accent" loading="lazy">
+        <div class="meta"><h4><span class="swatch" style="background:#3ad1e0"></span>Ion</h4><p>Cyan accent · dark</p></div>
+      </div>
+      <div class="theme-card">
+        <img src="assets/screenshots/theme_picker_daybreak.png" alt="Daybreak theme — light" loading="lazy">
+        <div class="meta"><h4><span class="swatch" style="background:#f4f6f5"></span>Daybreak</h4><p>Light · high-contrast</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- DEMOS -->
 <section id="demos">
   <div class="wrap-wide">
@@ -267,15 +326,15 @@
     <div class="videos reveal" id="videoGrid">
       <div class="video-card">
         <div class="frame"><span class="live-pill">● Rec</span><video src="assets/video/clipA_home.mp4" poster="assets/screenshots/home_screen_loaded.png" muted loop autoplay playsinline></video></div>
-        <div class="meta"><h4>Home dashboard</h4><p>Quick actions, cards and at-a-glance spend &amp; mileage — scrolling through real, locally-stored data.</p></div>
+        <div class="meta"><h4>Home dashboard · live</h4><p>Quick actions, cards and at-a-glance spend &amp; mileage — a screen recording scrolling through real, locally-stored data.</p></div>
       </div>
       <div class="video-card">
-        <div class="frame"><span class="live-pill">● Rec</span><video src="assets/video/clipB_nav.mp4" poster="assets/screenshots/booking_history_screen.png" muted loop autoplay playsinline></video></div>
-        <div class="meta"><h4>Feature navigation</h4><p>Moving across Travel, Approvals, Payables and Spends — each its own isolated module.</p></div>
+        <div class="frame"><img src="assets/screenshots/track_miles_idle_screen.png" alt="Track Miles screen — live tracking" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div class="meta"><h4>Live trip tracking</h4><p>The Track Miles screen — compass, speed, distance &amp; duration on the foreground-service tracker, ready to record a journey.</p></div>
       </div>
       <div class="video-card">
-        <div class="frame"><span class="live-pill">● Rec</span><video src="assets/video/clipC_tracking.mp4" poster="assets/screenshots/live_tracking.png" muted loop autoplay playsinline></video></div>
-        <div class="meta"><h4>Live trip tracking</h4><p>A live journey — compass, speed, distance &amp; duration updating in real time on the foreground-service tracker.</p></div>
+        <div class="frame"><img src="assets/screenshots/location_map_screen.png" alt="Recorded route on offline map" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div class="meta"><h4>Route on the map</h4><p>A completed trip drawn over offline map tiles — rendered with no Google dependency and no network on the noGms build.</p></div>
       </div>
     </div>
   </div>
@@ -286,8 +345,8 @@
   <div class="wrap-wide">
     <div class="sec-head reveal">
       <div class="sec-kicker">What it does</div>
-      <h2>Twelve feature areas, every one offline</h2>
-      <p class="sec-sub">Each feature is its own Gradle module. They never depend on each other — they meet only at the <span style="font-family:var(--mono);font-size:.85em">:app</span> composition root. Tap through them:</p>
+      <h2>Every feature area, every one offline</h2>
+      <p class="sec-sub">Each feature is its own Gradle module. They never depend on each other — they meet only at the <span style="font-family:var(--mono);font-size:.85em">:app</span> composition root. Tap through them — each links to its source module on GitHub:</p>
     </div>
 
     <div class="feat-tabs reveal" id="featTabs"></div>
@@ -472,8 +531,51 @@ flowchart LR
   </div>
 </section>
 
+<!-- EXPLORE MORE -->
+<section id="explore">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">Explore more</div>
+      <h2>Part of the portfolio</h2>
+      <p class="sec-sub">Mileway is one piece of a larger body of work. Dig into the code, ask the AI CV about any decision in it, or jump to the rest of the portfolio.</p>
+    </div>
+    <div class="explore-grid reveal">
+      <a class="explore-card" href="https://darkpandawarrior.github.io/cv-siddharth/" target="_blank" rel="noopener">
+        <div class="ic">🤖</div><h4>Ask my AI about Mileway</h4>
+        <p>An interactive AI CV — ask it about the architecture, the location engine or any trade-off in this project.</p>
+        <span class="go">Open AI CV ↗</span>
+      </a>
+      <a class="explore-card" href="https://darkpandawarrior.github.io/cv-siddharth/#resume" target="_blank" rel="noopener">
+        <div class="ic">📄</div><h4>Résumé / PDF</h4>
+        <p>The conventional one-page résumé — experience, scope and stack, downloadable as a PDF.</p>
+        <span class="go">View résumé ↗</span>
+      </a>
+      <a class="explore-card" href="https://github.com/darkpandawarrior/Mileway" target="_blank" rel="noopener">
+        <div class="ic">⌥</div><h4>Source on GitHub</h4>
+        <p>The full Kotlin Multiplatform repo — 23 modules, convention plugins, CI and the Roborazzi screenshot suite.</p>
+        <span class="go">Browse the code ↗</span>
+      </a>
+      <a class="explore-card" href="https://linkedin.com/in/siddharth-pandalai-3712b215a" target="_blank" rel="noopener">
+        <div class="ic">in</div><h4>LinkedIn</h4>
+        <p>Career history, recommendations and the longer story behind the projects.</p>
+        <span class="go">Connect ↗</span>
+      </a>
+      <a class="explore-card" href="/">
+        <div class="ic">🏠</div><h4>Portfolio home</h4>
+        <p>The rest of Siddharth Pandalai's selected work and writing.</p>
+        <span class="go">Back to portfolio →</span>
+      </a>
+      <a class="explore-card" href="https://github.com/darkpandawarrior/Mileway/tree/main/feature" target="_blank" rel="noopener">
+        <div class="ic">🧩</div><h4>Feature modules</h4>
+        <p>Every feature is its own isolated module — tracking, logging, media, approvals, payables, travel, cards, payments, events and more.</p>
+        <span class="go">See the modules ↗</span>
+      </a>
+    </div>
+  </div>
+</section>
+
 <!-- CTA -->
-<section class="cta-final">
+<section class="cta-final banded">
   <div class="wrap">
     <h2 class="reveal">Built end-to-end by Siddharth Pandalai</h2>
     <p class="sec-sub reveal">Architecture, location engine, design system, multiplatform build and CI — a complete, original engineering case study. Read the code or ask my AI CV about any decision in it.</p>
@@ -517,56 +619,78 @@ flowchart LR
 
 <script>
   // ---- Feature explorer data ----
+  // `src` → github path under the repo (feature/<m> or core/<m>); rendered as a "source ↗" link.
+  const REPO = 'https://github.com/darkpandawarrior/Mileway/tree/main';
   const FEATURES = [
-    { key:'track', tab:'Live tracking', title:'Live trip tracking', tag:'feature:tracking', shot:'live_tracking.png',
+    { key:'track', tab:'Live tracking', title:'Live trip tracking', tag:'feature:tracking', shot:'track_miles_idle_screen.png', src:'feature/tracking',
       body:'A foreground-service trip recorder with a live distance counter, route trace and elapsed timer. Jitter suppression and spike detection keep the distance honest even when GPS misbehaves.',
       points:['Foreground-service lifecycle','Live distance + route trace','Pause / resume / stop','Quality score per trip'],
       chips:['Foreground service','Kotlin Flow','GPS + IMU'] },
-    { key:'map', tab:'Route map', title:'Offline route map', tag:'feature:tracking · core:maps', shot:'route_map.png',
+    { key:'map', tab:'Route map', title:'Offline route map', tag:'feature:tracking · core:maps', shot:'location_map_screen.png', src:'core/maps',
       body:'The recorded path drawn over offline map tiles. The noGms build ships MapLibre with bundled MBTiles so the map renders with no Google dependency and no network.',
       points:['MapLibre + offline MBTiles','GPS path overlay','Pluggable map surface (gms / noGms)'],
       chips:['MapLibre','Offline tiles','Canvas overlay'] },
-    { key:'insights', tab:'Insights', title:'Trip insights', tag:'feature:tracking', shot:'track_insights.png',
+    { key:'insights', tab:'Insights', title:'Trip insights', tag:'feature:tracking', shot:'track_insights_screen.png', src:'feature/tracking',
       body:'Each saved trip gets a quality-score ring plus a breakdown of speed and detected activity, so a reviewer can trust the number at a glance.',
       points:['Quality-score ring','Speed + activity breakdown','Per-segment confidence'],
       chips:['Canvas charts','Derived state'] },
-    { key:'checkin', tab:'Geo check-in', title:'Geofenced check-in', tag:'feature:tracking', shot:'geo_check_in.png',
+    { key:'saved', tab:'Saved tracks', title:'Saved journeys', tag:'feature:tracking', shot:'saved_tracks_journeys_tab.png', src:'feature/tracking',
+      body:'A history of recorded journeys with distance, duration and quality at a glance, tabbed by journey type — every record read straight from local Room storage.',
+      points:['Journeys / drafts tabs','Distance + quality per trip','Tap through to trip detail'],
+      chips:['Room (KMP)','LazyColumn'] },
+    { key:'detail', tab:'Trip detail', title:'Trip detail', tag:'feature:tracking', shot:'track_detail_screen.png', src:'feature/tracking',
+      body:'The full record for a single trip — route, segment timeline, distance accounting and the per-trip quality breakdown, all reconstructed from on-device data.',
+      points:['Route + segment timeline','Distance accounting breakdown','Edit / submit actions'],
+      chips:['Detail scaffold','Derived state'] },
+    { key:'checkin', tab:'Geo check-in', title:'Geofenced check-in', tag:'feature:tracking', shot:'geo_check_in_screen.png', src:'feature/tracking',
       body:'Check in at a site with a map overlay and radius indicator, with a manual fallback when GPS can’t get a lock — the offline-first escape hatch.',
       points:['Geofence radius UI','Manual fallback','Check-in history'],
       chips:['Geofencing','Map overlay'] },
-    { key:'log', tab:'Log miles', title:'Manual trip logging', tag:'feature:logging', shot:'log_miles_step1.png',
+    { key:'log', tab:'Log miles', title:'Manual trip logging', tag:'feature:logging', shot:'log_miles_step1_screen.png', src:'feature/logging',
       body:'A step-by-step manual log for trips you didn’t auto-track — location search, route preview and an expense chain, all local.',
       points:['Location search + route preview','Step-by-step flow','Expense entry → detail → success'],
       chips:['Multi-step form','Shared scaffolds'] },
-    { key:'ocr', tab:'Odometer OCR', title:'On-device odometer OCR', tag:'feature:media', shot:'ocr.png',
+    { key:'expense', tab:'Expenses', title:'Expense logging', tag:'feature:logging', shot:'expense_history_screen.png', src:'feature/logging',
+      body:'Log expenses against a trip, attach receipts and browse the full expense history with status — the spend side of every journey, kept entirely on-device.',
+      points:['Expense entry → detail','Receipt attachments','Status-tagged history'],
+      chips:['Form scaffold','Room (KMP)'] },
+    { key:'ocr', tab:'Odometer OCR', title:'On-device odometer OCR', tag:'feature:media', shot:'media_attachment_preview_screen.png', src:'feature/media',
       body:'CameraX capture with flash, pinch-zoom and tap-focus, plus on-device OCR that reads the odometer and asks you to confirm — no image ever leaves the phone.',
       points:['CameraX capture','On-device OCR','Confirm-before-save sheet','Attachment grid'],
       chips:['CameraX','ML OCR','On-device'] },
-    { key:'approvals', tab:'Approvals', title:'Approval queue', tag:'feature:approvals', shot:'approvals_pending.png',
+    { key:'approvals', tab:'Approvals', title:'Approval queue', tag:'feature:approvals', shot:'approvals_screen_pending_tab.png', src:'feature/approvals',
       body:'A reviewer queue with policy-violation badges and a seek-clarification sheet. Items move through pending, approved and rejected states.',
       points:['Policy-violation badges','Seek-clarification sheet','Pending / approved / rejected states'],
       chips:['Bottom sheets','State machine'] },
-    { key:'payables', tab:'Payables', title:'Payables &amp; invoices', tag:'feature:payables', shot:'payables_list_matrix.png',
+    { key:'payables', tab:'Payables', title:'Payables &amp; invoices', tag:'feature:payables', shot:'payables_home_screen.png', src:'feature/payables',
       body:'A payables hub with multi-step create-PR and invoice flows, line-item editing and history surfaces built on a reusable submission scaffold.',
       points:['Create-PR / invoice flows','Line-item editing','Status history'],
       chips:['FormSubmissionScaffold','History list'] },
-    { key:'travel', tab:'Travel', title:'Travel hub', tag:'feature:travel', shot:'booking_history_screen.png',
+    { key:'travel', tab:'Travel', title:'Travel hub', tag:'feature:travel', shot:'travel_home_screen.png', src:'feature/travel',
       body:'Active-trip cards for flights and trains, upcoming bookings and full trip / booking history — the travel side of expense tracking.',
       points:['Flight / train active cards','Upcoming bookings','Trip + booking history'],
       chips:['Card matrix','History scaffold'] },
-    { key:'payments', tab:'Payments', title:'Payments', tag:'feature:payments', shot:'payments_history_screen.png',
+    { key:'cards', tab:'Cards', title:'Corporate cards', tag:'feature:cards', shot:'cards_home_screen.png', src:'feature/cards',
+      body:'A wallet of corporate cards with balances and controls, drilling into a per-card detail view with transactions, limits and a request-new-card flow.',
+      points:['Card wallet + balances','Per-card detail + transactions','Request / freeze controls'],
+      chips:['Card UI','Detail scaffold'] },
+    { key:'payments', tab:'Payments', title:'Payments', tag:'feature:payments', shot:'payments_history_screen.png', src:'feature/payments',
       body:'QR pay / request and a payment history with status tabs and transaction cards — a self-contained payments module on mock rails.',
       points:['QR pay / request','Status-tabbed history','Transaction cards'],
       chips:['QR','Tabbed history'] },
-    { key:'events', tab:'Events', title:'Events', tag:'feature:events', shot:'events_history_screen.png',
+    { key:'events', tab:'Events', title:'Events', tag:'feature:events', shot:'create_event_screen.png', src:'feature/events',
       body:'Create events with venue, category and capacity, and browse an event history with status and attendee cards.',
       points:['Event creation form','Status + attendee cards','History surface'],
       chips:['Form scaffold','Validation'] },
-    { key:'security', tab:'Device integrity', title:'Device integrity guard', tag:'feature:profile · core:security', shot:'root_guard_detected.png',
+    { key:'analytics', tab:'Analytics', title:'Analytics &amp; profile', tag:'feature:profile', shot:'analytics_home_screen.png', src:'feature/profile',
+      body:'A profile and analytics hub — mileage and spend trends, a notification centre and account settings, all computed from locally-stored records.',
+      points:['Mileage + spend analytics','Notification centre','Account hub + settings'],
+      chips:['Charts','Derived state'] },
+    { key:'security', tab:'Device integrity', title:'Device integrity guard', tag:'feature:profile · core:security', shot:'root_guard_screen.png', src:'core/security',
       body:'A root / device-integrity guard surfaces detected signals and a clean-device confirmation — the security primitive behind encryption-ready storage.',
       points:['Root-signal detection','Clean vs detected states','Encryption-ready storage'],
       chips:['Security','core:security'] },
-    { key:'search', tab:'Master search', title:'Master search', tag:'feature:search · core:data', shot:'search_masterSearch_results.png',
+    { key:'search', tab:'Master search', title:'Master search', tag:'feature:search · core:data', shot:'search_masterSearch_results.png', src:'core/data',
       body:'One query fans out across every feature module — trips, expenses, approvals, payables, payments, events and more — then merges, dedupes and ranks the results. Each feature contributes a SearchProvider; the aggregator never knows the features exist.',
       points:['SearchProvider registry (Koin getAll)','Concurrent fan-out + dedup by (type,id)','Scope tabs + type filters','Per-provider failure isolation'],
       chips:['Registry pattern','Coroutines','MVI'] },
@@ -591,6 +715,7 @@ flowchart LR
         <p>${f.body}</p>
         <ul>${f.points.map(x => `<li>${x}</li>`).join('')}</ul>
         <div class="chips">${f.chips.map(c => `<span class="chip">${c}</span>`).join('')}</div>
+        <a class="src-link" href="${REPO}/${f.src}" target="_blank" rel="noopener">${f.src}/ source ↗</a>
       </div>`;
     panelsEl.appendChild(p);
   });
@@ -601,12 +726,23 @@ flowchart LR
     document.querySelectorAll('.feat-panel').forEach(x => x.classList.toggle('on', x.dataset.i === i));
   });
 
-  // ---- Gallery ----
-  const GALLERY = ['live_tracking.png','tracking_success.png','route_map.png','track_insights.png','ocr.png',
-    'geo_check_in.png','log_miles_step1.png','home_screen_loaded.png','approvals_pending.png','hardware_events.png',
-    'check_in_history.png','saved_tracks_journeys_tab.png','payments_history_screen.png','create_event_screen.png',
-    'booking_history_screen.png','trip_history_screen.png','root_guard_detected.png','track_detail.png',
-    'payables_list_matrix.png','events_history_screen.png','search_masterSearch_results.png','search_masterSearch_empty.png'];
+  // ---- Gallery — 30 diverse DARK screens across every area ----
+  const GALLERY = [
+    // tracking
+    'track_miles_idle_screen.png','tracking_success_screen.png','location_map_screen.png','track_insights_screen.png',
+    'track_detail_screen.png','geo_check_in_screen.png','check_in_history_screen.png','saved_tracks_journeys_tab.png',
+    'track_data_preview_overview_tab.png','hardware_events_log_screen.png',
+    // logging / media / expenses
+    'log_miles_step1_screen.png','media_attachment_preview_screen.png','expense_history_screen.png','expense_detail_screen.png',
+    // home / travel
+    'home_screen_loaded.png','travel_home_screen.png','booking_history_screen.png','trip_history_screen.png','create_trip_screen.png',
+    // payments / payables / spends
+    'payments_history_screen.png','payables_home_screen.png','qr_home_screen.png','spends_home_screen.png',
+    // events / cards
+    'events_history_screen.png','create_event_screen.png','cards_home_screen.png','card_detail_screen.png',
+    // profile / analytics / search / settings / security
+    'analytics_home_screen.png','notification_centre_screen.png','profile_account_hub.png',
+    'search_masterSearch_results.png','settings_screen.png','root_guard_screen.png'];
   const galleryEl = document.getElementById('gallery');
   GALLERY.forEach(name => {
     const img = document.createElement('img');
@@ -617,7 +753,7 @@ flowchart LR
   // ---- Lightbox ----
   const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lightboxImg');
   document.addEventListener('click', e => {
-    if (e.target.matches('.gallery img')) { lbImg.src = e.target.src; lb.classList.add('on'); }
+    if (e.target.matches('.gallery img') || e.target.matches('.theme-card img')) { lbImg.src = e.target.src; lb.classList.add('on'); }
     else if (e.target.closest('.lightbox')) { lb.classList.remove('on'); }
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
