@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mileway — Offline-first tracking in Kotlin Multiplatform · Siddharth Pandalai</title>
+<meta name="description" content="Mileway — a fully offline mileage, travel & expense tracker built in Kotlin & Compose Multiplatform. 23-module clean architecture, MVI, Koin, Room (KMP), Android · iOS · Wear OS. An interactive engineering case study.">
+<meta property="og:title" content="Mileway — Offline-first tracking in Kotlin Multiplatform">
+<meta property="og:description" content="A standalone, fully-offline mileage/travel/expense app. 23-module clean architecture, Compose Multiplatform, location engine, dual Play/F-Droid distribution.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://darkpandawarrior.github.io/mileway/">
+<link rel="icon" href="assets/brand/mileway-icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Design tokens — shared with darkpandawarrior.github.io */
+  :root {
+    --ink: #0b0f0d;
+    --surface: #111613;
+    --card: #171e1a;
+    --line: #243029;
+    --text: #e8efe9;
+    --muted: #9aa8a0;
+    --faint: #5f6e66;
+    --accent: #3ddc84;
+    --accent-dim: #2bb86c;
+    --display: "Space Grotesk", system-ui, sans-serif;
+    --body: "Inter", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--ink); color: var(--text); font-family: var(--body); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--accent); color: var(--ink); }
+  .wrap { max-width: 1024px; margin: 0 auto; padding: 0 24px; }
+  .wrap-wide { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  h1, h2, h3, h4, .logo { font-family: var(--display); }
+  a { color: var(--accent); }
+
+  /* Nav */
+  nav { position: sticky; top: 0; z-index: 40; background: rgba(11,15,13,.82); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  nav .wrap-wide { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .logo { font-weight: 700; font-size: 1.1rem; color: var(--text); text-decoration: none; letter-spacing: -.02em; display: flex; align-items: center; gap: 9px; }
+  .logo img { width: 22px; height: 22px; }
+  .logo .dot { color: var(--accent); }
+  .logo .sub { color: var(--muted); font-weight: 500; }
+  .nav-links { display: flex; gap: 22px; align-items: center; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: .9rem; transition: color .2s; }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta { display: inline-flex; align-items: center; gap: 7px; background: var(--accent); color: var(--ink) !important; font-weight: 600; padding: 7px 15px; border-radius: 999px; font-size: .88rem; transition: background .2s; }
+  .nav-cta:hover { background: var(--accent-dim); }
+  @media (max-width: 860px) { .nav-links a:not(.nav-cta) { display: none; } }
+
+  /* Hero */
+  header { padding: 70px 0 40px; position: relative; overflow: hidden; }
+  .hero-grid { display: grid; grid-template-columns: 1fr; gap: 48px; align-items: center; }
+  @media (min-width: 940px) { .hero-grid { grid-template-columns: 1fr 300px; } }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: .85rem; margin-bottom: 20px; transition: color .2s; }
+  .back-link:hover { color: var(--accent); }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--accent); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 18px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(61,220,132,.05); }
+  .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  h1.title { font-size: clamp(2.8rem, 8vw, 4.4rem); line-height: 1.04; letter-spacing: -.03em; font-weight: 700; }
+  h1.title .accent { color: var(--accent); }
+  .lede { margin-top: 18px; font-size: 1.18rem; color: #cdd8d0; max-width: 600px; line-height: 1.55; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .sub2 { margin-top: 14px; font-size: .98rem; color: var(--muted); max-width: 600px; }
+  .cta { margin-top: 30px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: .92rem; transition: all .2s; cursor: pointer; }
+  .btn-primary { background: var(--accent); color: var(--ink); }
+  .btn-primary:hover { background: var(--accent-dim); }
+  .btn-ghost { border: 1px solid var(--line); color: #d6e0d9; background: transparent; }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Hero phone demo */
+  .demo-stage { display: none; justify-content: center; }
+  @media (min-width: 940px) { .demo-stage { display: flex; } }
+  .demo-phone { position: relative; width: 248px; height: 524px; border-radius: 2.2rem; border: 1px solid var(--line); background: #05070699; box-shadow: 0 30px 60px -20px rgba(61,220,132,.18); padding: 10px; }
+  .demo-phone .notch { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); width: 64px; height: 6px; border-radius: 999px; background: #000; z-index: 3; }
+  .demo-screen { position: relative; width: 100%; height: 100%; border-radius: 1.7rem; overflow: hidden; background: var(--ink); }
+  .demo-screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; opacity: 0; transition: opacity .8s ease; }
+  .demo-screen img.on { opacity: 1; }
+  .demo-dots { display: flex; gap: 6px; justify-content: center; margin-top: 16px; }
+  .demo-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: all .3s; cursor: pointer; }
+  .demo-dots span.on { background: var(--accent); width: 18px; border-radius: 999px; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  .demo-phone { animation: float 6s ease-in-out infinite; }
+
+  /* Metrics band */
+  .band { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface); }
+  .metrics { display: grid; grid-template-columns: repeat(2, 1fr); padding: 36px 24px; max-width: 1024px; margin: 0 auto; }
+  @media (min-width: 720px) { .metrics { grid-template-columns: repeat(4, 1fr); } }
+  .metric { padding: 12px 16px; }
+  .metric b { display: block; font-family: var(--display); font-size: 2.4rem; font-weight: 700; color: var(--accent); letter-spacing: -.02em; line-height: 1; }
+  .metric span { font-size: .9rem; font-weight: 500; color: #d6e0d9; display: block; margin-top: 8px; }
+  .metric small { font-size: .74rem; color: var(--faint); display: block; margin-top: 4px; }
+
+  /* Sections */
+  section { padding: 78px 0; }
+  section.banded { border-top: 1px solid var(--line); background: var(--surface); }
+  .sec-head { margin-bottom: 44px; }
+  .sec-kicker { font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  h2 { font-size: clamp(1.7rem, 4vw, 2.2rem); letter-spacing: -.02em; font-weight: 700; }
+  .sec-sub { color: var(--muted); margin-top: 10px; max-width: 680px; font-size: 1rem; }
+
+  /* Demos / video */
+  .videos { display: grid; grid-template-columns: 1fr; gap: 28px; }
+  @media (min-width: 760px) { .videos { grid-template-columns: repeat(3, 1fr); } }
+  .video-card { background: var(--card); border: 1px solid var(--line); border-radius: 1.1rem; overflow: hidden; transition: border-color .2s, transform .2s; }
+  .video-card:hover { border-color: rgba(61,220,132,.5); transform: translateY(-4px); }
+  .video-card .frame { background: #000; position: relative; aspect-ratio: 9 / 20; display: flex; align-items: center; justify-content: center; }
+  .video-card video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video-card .meta { padding: 16px 18px; }
+  .video-card .meta h4 { font-size: 1rem; font-weight: 600; }
+  .video-card .meta p { color: var(--muted); font-size: .82rem; margin-top: 4px; }
+  .live-pill { position: absolute; top: 10px; left: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 5px; font-size: .66rem; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--ink); background: var(--accent); padding: 3px 9px; border-radius: 999px; }
+
+  /* Feature explorer */
+  .feat-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+  .feat-tab { font-size: .82rem; padding: 7px 15px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: transparent; cursor: pointer; font-family: var(--body); transition: all .2s; }
+  .feat-tab:hover { border-color: var(--accent); color: var(--text); }
+  .feat-tab.on { background: var(--accent); color: var(--ink); border-color: var(--accent); font-weight: 600; }
+  .feat-panel { display: none; grid-template-columns: 1fr; gap: 36px; align-items: center; }
+  .feat-panel.on { display: grid; }
+  @media (min-width: 760px) { .feat-panel { grid-template-columns: 260px 1fr; } }
+  .feat-shot { justify-self: center; }
+  .feat-shot img { width: 240px; border-radius: 1.2rem; border: 1px solid var(--line); box-shadow: 0 24px 40px -18px rgba(0,0,0,.6); display: block; }
+  .feat-body h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
+  .feat-body .feat-tag { font-size: .78rem; color: var(--accent); font-weight: 600; letter-spacing: .03em; }
+  .feat-body p { color: #c8d4cc; margin-top: 14px; font-size: .98rem; line-height: 1.7; }
+  .feat-body ul { list-style: none; margin-top: 16px; }
+  .feat-body li { color: var(--muted); font-size: .92rem; padding: 5px 0 5px 18px; position: relative; }
+  .feat-body li::before { content: ""; position: absolute; left: 0; top: .7em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 20px; }
+  .chip { font-size: .72rem; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+
+  /* Architecture */
+  .arch-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
+  @media (min-width: 900px) { .arch-grid { grid-template-columns: 1.3fr 1fr; align-items: start; } }
+  .diagram { background: var(--card); border: 1px solid var(--line); border-radius: 1.1rem; padding: 22px; overflow-x: auto; }
+  .diagram-title { font-size: .8rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+  .mermaid { display: flex; justify-content: center; min-height: 60px; }
+  .arch-rules { display: grid; gap: 14px; }
+  .rule { background: var(--card); border: 1px solid var(--line); border-radius: .9rem; padding: 18px 20px; }
+  .rule h4 { font-size: .98rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .rule h4 .ic { color: var(--accent); }
+  .rule p { color: var(--muted); font-size: .88rem; margin-top: 6px; }
+  .diagram-row { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 28px; }
+  @media (min-width: 760px) { .diagram-row { grid-template-columns: 1fr 1fr; } }
+
+  /* Gallery */
+  .gallery { columns: 2; column-gap: 14px; }
+  @media (min-width: 640px) { .gallery { columns: 3; } }
+  @media (min-width: 940px) { .gallery { columns: 4; } }
+  .gallery img { width: 100%; margin-bottom: 14px; border-radius: .8rem; border: 1px solid var(--line); cursor: zoom-in; transition: border-color .2s, transform .2s; display: block; }
+  .gallery img:hover { border-color: var(--accent); transform: scale(1.02); }
+
+  /* Lightbox */
+  .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(5,7,6,.92); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 32px; cursor: zoom-out; }
+  .lightbox.on { display: flex; }
+  .lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 1rem; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.7); }
+  .lightbox .x { position: absolute; top: 22px; right: 28px; color: var(--muted); font-size: 2rem; cursor: pointer; line-height: 1; }
+
+  /* Tech stack */
+  .tech-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+  @media (min-width: 640px) { .tech-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 940px) { .tech-grid { grid-template-columns: repeat(3, 1fr); } }
+  .tech-card { background: var(--card); border: 1px solid var(--line); border-radius: 1rem; padding: 20px 22px; }
+  .tech-card h4 { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-bottom: 12px; }
+  .tech-card ul { list-style: none; }
+  .tech-card li { color: #c8d4cc; font-size: .9rem; padding: 4px 0; display: flex; justify-content: space-between; gap: 10px; }
+  .tech-card li span { color: var(--faint); font-family: var(--mono); font-size: .8rem; }
+
+  /* Highlights row */
+  .hi-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+  @media (min-width: 720px) { .hi-grid { grid-template-columns: repeat(2, 1fr); } }
+  .hi { background: var(--card); border: 1px solid var(--line); border-radius: 1rem; padding: 24px; }
+  .hi .ic { font-size: 1.4rem; }
+  .hi h4 { font-size: 1.05rem; font-weight: 700; margin: 10px 0 6px; }
+  .hi p { color: var(--muted); font-size: .9rem; line-height: 1.65; }
+
+  /* CTA */
+  .cta-final { text-align: center; }
+  .cta-final h2 { margin-bottom: 14px; }
+  .cta-final .sec-sub { margin: 0 auto 28px; }
+  .cta-links { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  footer { padding: 28px 0; text-align: center; color: var(--faint); font-size: .78rem; border-top: 1px solid var(--line); }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* Reveal */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .demo-phone { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap-wide">
+    <a class="logo" href="/"><img src="assets/brand/mileway-icon.svg" alt="">Mileway</a>
+    <div class="nav-links">
+      <a href="#demos">Demos</a>
+      <a href="#features">Features</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#engine">Location engine</a>
+      <a href="#gallery">Gallery</a>
+      <a class="nav-cta" href="https://github.com/darkpandawarrior/Mileway" target="_blank" rel="noopener">View on GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap-wide hero-grid">
+    <div>
+      <a class="back-link" href="/">← Siddharth Pandalai · portfolio</a>
+      <div class="eyebrow">Open source · Kotlin Multiplatform</div>
+      <h1 class="title">Mile<span class="accent">way</span></h1>
+      <p class="lede">Offline-first <strong>mileage, travel &amp; expense tracking</strong>, built in Kotlin &amp; Compose Multiplatform.</p>
+      <p class="sub2">A standalone app that tracks trips, logs expenses and routes approvals entirely on-device — no backend, no network, no account. One shared codebase targets <strong style="color:var(--text)">Android, iOS and Wear OS</strong> across a 23-module clean architecture.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/darkpandawarrior/Mileway" target="_blank" rel="noopener">View on GitHub ↗</a>
+        <a class="btn btn-ghost" href="#demos">▶ Watch it run</a>
+        <a class="btn btn-ghost" href="#architecture">Architecture</a>
+      </div>
+    </div>
+
+    <div class="demo-stage" aria-hidden="true">
+      <div>
+        <div class="demo-phone">
+          <div class="notch"></div>
+          <div class="demo-screen" id="demoScreen">
+            <img class="on" src="assets/screenshots/live_tracking.png" alt="">
+            <img src="assets/screenshots/route_map.png" alt="">
+            <img src="assets/screenshots/track_insights.png" alt="">
+            <img src="assets/screenshots/ocr.png" alt="">
+            <img src="assets/screenshots/approvals_pending.png" alt="">
+            <img src="assets/screenshots/home_screen_loaded.png" alt="">
+          </div>
+        </div>
+        <div class="demo-dots" id="demoDots"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="band">
+  <div class="metrics">
+    <div class="metric"><b>23</b><span>Gradle modules</span><small>clean, layered architecture</small></div>
+    <div class="metric"><b>11</b><span>feature modules</span><small>isolated, never cross-depend</small></div>
+    <div class="metric"><b>3</b><span>platforms</span><small>Android · iOS · Wear OS</small></div>
+    <div class="metric"><b>0</b><span>backend calls</span><small>100% offline, on-device data</small></div>
+  </div>
+</div>
+
+<!-- DEMOS -->
+<section id="demos">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">See it running</div>
+      <h2>Real captures from the running app</h2>
+      <p class="sec-sub">Recorded on an Android emulator running the offline <span style="font-family:var(--mono);font-size:.85em">noGms</span> build — no network, deterministic mock data. These are screen recordings, not mockups.</p>
+    </div>
+    <div class="videos reveal" id="videoGrid">
+      <div class="video-card">
+        <div class="frame"><span class="live-pill">● Rec</span><video src="assets/video/clipA_home.mp4" poster="assets/screenshots/home_screen_loaded.png" muted loop autoplay playsinline></video></div>
+        <div class="meta"><h4>Home dashboard</h4><p>Quick actions, cards and at-a-glance spend &amp; mileage — scrolling through real, locally-stored data.</p></div>
+      </div>
+      <div class="video-card">
+        <div class="frame"><span class="live-pill">● Rec</span><video src="assets/video/clipB_nav.mp4" poster="assets/screenshots/booking_history_screen.png" muted loop autoplay playsinline></video></div>
+        <div class="meta"><h4>Feature navigation</h4><p>Moving across Travel, Approvals, Payables and Spends — each its own isolated module.</p></div>
+      </div>
+      <div class="video-card">
+        <div class="frame"><img src="assets/screenshots/live_tracking.png" alt="Live trip tracking" loading="lazy"></div>
+        <div class="meta"><h4>Live trip tracking</h4><p>Foreground-service trip recording with a live distance counter and route trace.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="banded">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">What it does</div>
+      <h2>Twelve feature areas, every one offline</h2>
+      <p class="sec-sub">Each feature is its own Gradle module. They never depend on each other — they meet only at the <span style="font-family:var(--mono);font-size:.85em">:app</span> composition root. Tap through them:</p>
+    </div>
+
+    <div class="feat-tabs reveal" id="featTabs"></div>
+    <div id="featPanels" class="reveal"></div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">How it's built</div>
+      <h2>A 23-module clean architecture</h2>
+      <p class="sec-sub">Feature modules are isolated; shared concerns live in <span style="font-family:var(--mono);font-size:.85em">core:*</span> modules compiled for every platform. The dependency graph only ever points inward.</p>
+    </div>
+
+    <div class="arch-grid reveal">
+      <div class="diagram">
+        <div class="diagram-title">Module dependency graph</div>
+        <pre class="mermaid">
+graph TD
+  APP[":app — composition root · navigation · Koin graph"]
+  subgraph Features["11 feature modules — isolated from each other"]
+    direction LR
+    FT["tracking"]
+    FL["logging"]
+    FM["media"]
+    FP["profile"]
+    FA["approvals"]
+    FPA["payables"]
+    FTR["travel"]
+    FC["cards"]
+    FPM["payments"]
+    FE["events"]
+    FAG["agent"]
+  end
+  subgraph Core["9 core modules — shared commonMain"]
+    direction LR
+    UI["core:ui — design system + theme"]
+    DATA["core:data — Room KMP + DataStore"]
+    NET["core:network — contracts (mocked)"]
+    PLAT["core:platform — expect / actual"]
+    SEC["core:security — device integrity"]
+    MAPS["core:maps — maplibre / krossmap"]
+  end
+  STUB[":stub — deterministic mock data"]
+  WEAR[":wear — Wear OS tile"]
+  APP --> Features
+  APP --> STUB
+  APP --> WEAR
+  Features --> Core
+  STUB --> DATA
+  STUB --> NET
+        </pre>
+      </div>
+      <div class="arch-rules">
+        <div class="rule"><h4><span class="ic">◆</span> Features never touch features</h4><p>No feature module depends on another. Cross-feature wiring happens once, at the <span style="font-family:var(--mono)">:app</span> root — so any feature can be built, tested or deleted in isolation.</p></div>
+        <div class="rule"><h4><span class="ic">◆</span> Shared core, one source of truth</h4><p>UI system, data, contracts, platform services and security live in <span style="font-family:var(--mono)">core:*</span> and compile to <span style="font-family:var(--mono)">commonMain</span> for Android, iOS &amp; Wear.</p></div>
+        <div class="rule"><h4><span class="ic">◆</span> Mock data is a module</h4><p>The <span style="font-family:var(--mono)">:stub</span> module supplies deterministic data behind every repository — which is exactly why the whole app, and its screenshot tests, run with zero network.</p></div>
+        <div class="rule"><h4><span class="ic">◆</span> Convention plugins</h4><p>A <span style="font-family:var(--mono)">build-logic</span> set of convention plugins + a version catalog keep AGP/Kotlin/Compose config identical across all 23 modules.</p></div>
+      </div>
+    </div>
+
+    <div class="diagram-row reveal">
+      <div class="diagram">
+        <div class="diagram-title">MVI unidirectional state</div>
+        <pre class="mermaid">
+flowchart LR
+  SCN["Composable screen"] -->|Action| VM["ViewModel"]
+  VM -->|reduce| ST["Immutable ScreenState"]
+  ST -->|StateFlow| SCN
+  VM <--> REPO["Repository"]
+  REPO <--> ROOM[("Room · KMP")]
+  REPO <--> DS[("DataStore")]
+        </pre>
+      </div>
+      <div class="diagram">
+        <div class="diagram-title">Dual distribution · one codebase</div>
+        <pre class="mermaid">
+flowchart TD
+  SRC["Single Kotlin codebase"] --> GMS["gms flavor"]
+  SRC --> NOGMS["noGms flavor"]
+  GMS --> PLAY["Google Play · KrossMap maps"]
+  NOGMS --> FDROID["F-Droid · MapLibre offline tiles"]
+  GUARD{"dependency-guard"} -.blocks proprietary libs.-> NOGMS
+        </pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCATION ENGINE -->
+<section id="engine" class="banded">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">The hard part</div>
+      <h2>A location engine that treats GPS as a noisy signal</h2>
+      <p class="sec-sub">Raw GPS drifts, spikes and stalls. Mileway's tracking core runs every fix through a cleaning pipeline before a single metre is counted — fused with the device's accelerometer, all inside a foreground service, all on-device.</p>
+    </div>
+
+    <div class="diagram reveal" style="margin-bottom:28px">
+      <div class="diagram-title">Tracking pipeline</div>
+      <pre class="mermaid">
+flowchart LR
+  SIM["Simulated drive source"] -.->|for tests| GPS
+  GPS["Raw GPS fixes"] --> JIT["Jitter suppression"]
+  JIT --> SPIKE["Spike detection"]
+  IMU["IMU / accelerometer"] --> FUSE
+  SPIKE --> FUSE["Sensor fusion"]
+  FUSE --> BUCKET["Four-bucket distance accounting"]
+  BUCKET --> OUT(["Clean distance + quality score"])
+      </pre>
+    </div>
+
+    <div class="hi-grid reveal">
+      <div class="hi"><div class="ic">🛰️</div><h4>Jitter &amp; spike filtering</h4><p>Stationary jitter is suppressed and physically-impossible jumps are rejected, so a parked phone never accrues phantom distance.</p></div>
+      <div class="hi"><div class="ic">🧭</div><h4>Sensor fusion</h4><p>Accelerometer readings corroborate GPS movement, keeping the trace stable through tunnels, urban canyons and weak-signal stretches.</p></div>
+      <div class="hi"><div class="ic">🧮</div><h4>Four-bucket distance accounting</h4><p>Distance is bucketed by confidence rather than summed blindly, producing a defensible total plus a per-trip quality score.</p></div>
+      <div class="hi"><div class="ic">🔁</div><h4>Deterministic by design</h4><p>A simulated-drive source replays a fixed route, so the entire engine runs — and is unit-tested — without anyone leaving their desk.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">Every screen</div>
+      <h2>Screenshot gallery</h2>
+      <p class="sec-sub">All captured deterministically by the Roborazzi screenshot suite — 50 baselines generated on the JVM with no emulator. Click any to enlarge.</p>
+    </div>
+    <div class="gallery reveal" id="gallery"></div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section id="stack" class="banded">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">Under the hood</div>
+      <h2>Tech stack</h2>
+      <p class="sec-sub">Modern, multiplatform, and deliberately backend-free.</p>
+    </div>
+    <div class="tech-grid reveal">
+      <div class="tech-card"><h4>Language &amp; UI</h4><ul>
+        <li>Kotlin <span>2.4.0</span></li>
+        <li>Compose Multiplatform <span>1.11.1</span></li>
+        <li>Material 3</li>
+        <li>MVI · unidirectional state</li>
+      </ul></div>
+      <div class="tech-card"><h4>Data &amp; concurrency</h4><ul>
+        <li>Room (KMP) <span>2.8.4</span></li>
+        <li>AndroidX DataStore</li>
+        <li>Coroutines + Flow</li>
+        <li>kotlinx-datetime</li>
+      </ul></div>
+      <div class="tech-card"><h4>DI &amp; networking</h4><ul>
+        <li>Koin (multiplatform) <span>4.2.2</span></li>
+        <li>Ktor <span>mocked</span></li>
+        <li>OkHttp · Darwin engines</li>
+        <li>No live backend</li>
+      </ul></div>
+      <div class="tech-card"><h4>Maps &amp; media</h4><ul>
+        <li>MapLibre <span>noGms</span></li>
+        <li>KrossMap <span>gms</span></li>
+        <li>Offline MBTiles</li>
+        <li>CameraX · on-device OCR</li>
+      </ul></div>
+      <div class="tech-card"><h4>Build &amp; quality</h4><ul>
+        <li>AGP <span>9.2</span> · Gradle KTS</li>
+        <li>Convention plugins</li>
+        <li>detekt · ktlint · Kover</li>
+        <li>dependency-guard</li>
+      </ul></div>
+      <div class="tech-card"><h4>Testing</h4><ul>
+        <li>JUnit · MockK · Turbine</li>
+        <li>Robolectric · Koin-Test</li>
+        <li>Roborazzi <span>50 shots</span></li>
+        <li>178 test sources</li>
+      </ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-final">
+  <div class="wrap">
+    <h2 class="reveal">Built end-to-end by Siddharth Pandalai</h2>
+    <p class="sec-sub reveal">Architecture, location engine, design system, multiplatform build and CI — a complete, original engineering case study. Read the code or ask my AI CV about any decision in it.</p>
+    <div class="cta-links reveal">
+      <a class="btn btn-primary" href="https://github.com/darkpandawarrior/Mileway" target="_blank" rel="noopener">View source on GitHub ↗</a>
+      <a class="btn btn-ghost" href="https://darkpandawarrior.github.io/cv-siddharth/" target="_blank" rel="noopener">Ask my AI CV ↗</a>
+      <a class="btn btn-ghost" href="/">← Back to portfolio</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Mileway · an original project by <a href="/">Siddharth Pandalai</a> · Kotlin Multiplatform · <a href="https://github.com/darkpandawarrior/Mileway" target="_blank" rel="noopener">source</a>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox"><span class="x">×</span><img id="lightboxImg" src="" alt=""></div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      background: 'transparent',
+      primaryColor: '#171e1a',
+      primaryBorderColor: '#3ddc84',
+      primaryTextColor: '#e8efe9',
+      secondaryColor: '#111613',
+      tertiaryColor: '#0b0f0d',
+      lineColor: '#5f6e66',
+      fontFamily: 'Inter, sans-serif',
+      fontSize: '14px',
+      clusterBkg: '#0e1310',
+      clusterBorder: '#243029',
+      edgeLabelBackground: '#0b0f0d'
+    }
+  });
+</script>
+
+<script>
+  // ---- Feature explorer data ----
+  const FEATURES = [
+    { key:'track', tab:'Live tracking', title:'Live trip tracking', tag:'feature:tracking', shot:'live_tracking.png',
+      body:'A foreground-service trip recorder with a live distance counter, route trace and elapsed timer. Jitter suppression and spike detection keep the distance honest even when GPS misbehaves.',
+      points:['Foreground-service lifecycle','Live distance + route trace','Pause / resume / stop','Quality score per trip'],
+      chips:['Foreground service','Kotlin Flow','GPS + IMU'] },
+    { key:'map', tab:'Route map', title:'Offline route map', tag:'feature:tracking · core:maps', shot:'route_map.png',
+      body:'The recorded path drawn over offline map tiles. The noGms build ships MapLibre with bundled MBTiles so the map renders with no Google dependency and no network.',
+      points:['MapLibre + offline MBTiles','GPS path overlay','Pluggable map surface (gms / noGms)'],
+      chips:['MapLibre','Offline tiles','Canvas overlay'] },
+    { key:'insights', tab:'Insights', title:'Trip insights', tag:'feature:tracking', shot:'track_insights.png',
+      body:'Each saved trip gets a quality-score ring plus a breakdown of speed and detected activity, so a reviewer can trust the number at a glance.',
+      points:['Quality-score ring','Speed + activity breakdown','Per-segment confidence'],
+      chips:['Canvas charts','Derived state'] },
+    { key:'checkin', tab:'Geo check-in', title:'Geofenced check-in', tag:'feature:tracking', shot:'geo_check_in.png',
+      body:'Check in at a site with a map overlay and radius indicator, with a manual fallback when GPS can’t get a lock — the offline-first escape hatch.',
+      points:['Geofence radius UI','Manual fallback','Check-in history'],
+      chips:['Geofencing','Map overlay'] },
+    { key:'log', tab:'Log miles', title:'Manual trip logging', tag:'feature:logging', shot:'log_miles_step1.png',
+      body:'A step-by-step manual log for trips you didn’t auto-track — location search, route preview and an expense chain, all local.',
+      points:['Location search + route preview','Step-by-step flow','Expense entry → detail → success'],
+      chips:['Multi-step form','Shared scaffolds'] },
+    { key:'ocr', tab:'Odometer OCR', title:'On-device odometer OCR', tag:'feature:media', shot:'ocr.png',
+      body:'CameraX capture with flash, pinch-zoom and tap-focus, plus on-device OCR that reads the odometer and asks you to confirm — no image ever leaves the phone.',
+      points:['CameraX capture','On-device OCR','Confirm-before-save sheet','Attachment grid'],
+      chips:['CameraX','ML OCR','On-device'] },
+    { key:'approvals', tab:'Approvals', title:'Approval queue', tag:'feature:approvals', shot:'approvals_pending.png',
+      body:'A reviewer queue with policy-violation badges and a seek-clarification sheet. Items move through pending, approved and rejected states.',
+      points:['Policy-violation badges','Seek-clarification sheet','Pending / approved / rejected states'],
+      chips:['Bottom sheets','State machine'] },
+    { key:'payables', tab:'Payables', title:'Payables &amp; invoices', tag:'feature:payables', shot:'payables_list_matrix.png',
+      body:'A payables hub with multi-step create-PR and invoice flows, line-item editing and history surfaces built on a reusable submission scaffold.',
+      points:['Create-PR / invoice flows','Line-item editing','Status history'],
+      chips:['FormSubmissionScaffold','History list'] },
+    { key:'travel', tab:'Travel', title:'Travel hub', tag:'feature:travel', shot:'booking_history_screen.png',
+      body:'Active-trip cards for flights and trains, upcoming bookings and full trip / booking history — the travel side of expense tracking.',
+      points:['Flight / train active cards','Upcoming bookings','Trip + booking history'],
+      chips:['Card matrix','History scaffold'] },
+    { key:'payments', tab:'Payments', title:'Payments', tag:'feature:payments', shot:'payments_history_screen.png',
+      body:'QR pay / request and a payment history with status tabs and transaction cards — a self-contained payments module on mock rails.',
+      points:['QR pay / request','Status-tabbed history','Transaction cards'],
+      chips:['QR','Tabbed history'] },
+    { key:'events', tab:'Events', title:'Events', tag:'feature:events', shot:'events_history_screen.png',
+      body:'Create events with venue, category and capacity, and browse an event history with status and attendee cards.',
+      points:['Event creation form','Status + attendee cards','History surface'],
+      chips:['Form scaffold','Validation'] },
+    { key:'security', tab:'Device integrity', title:'Device integrity guard', tag:'feature:profile · core:security', shot:'root_guard_detected.png',
+      body:'A root / device-integrity guard surfaces detected signals and a clean-device confirmation — the security primitive behind encryption-ready storage.',
+      points:['Root-signal detection','Clean vs detected states','Encryption-ready storage'],
+      chips:['Security','core:security'] },
+  ];
+
+  const tabsEl = document.getElementById('featTabs');
+  const panelsEl = document.getElementById('featPanels');
+  FEATURES.forEach((f, i) => {
+    const t = document.createElement('button');
+    t.className = 'feat-tab' + (i === 0 ? ' on' : '');
+    t.innerHTML = f.tab; t.dataset.i = i;
+    tabsEl.appendChild(t);
+
+    const p = document.createElement('div');
+    p.className = 'feat-panel' + (i === 0 ? ' on' : '');
+    p.dataset.i = i;
+    p.innerHTML = `
+      <div class="feat-shot"><img src="assets/screenshots/${f.shot}" alt="${f.title}" loading="lazy"></div>
+      <div class="feat-body">
+        <div class="feat-tag">${f.tag}</div>
+        <h3>${f.title}</h3>
+        <p>${f.body}</p>
+        <ul>${f.points.map(x => `<li>${x}</li>`).join('')}</ul>
+        <div class="chips">${f.chips.map(c => `<span class="chip">${c}</span>`).join('')}</div>
+      </div>`;
+    panelsEl.appendChild(p);
+  });
+  tabsEl.addEventListener('click', e => {
+    const b = e.target.closest('.feat-tab'); if (!b) return;
+    const i = b.dataset.i;
+    document.querySelectorAll('.feat-tab').forEach(x => x.classList.toggle('on', x.dataset.i === i));
+    document.querySelectorAll('.feat-panel').forEach(x => x.classList.toggle('on', x.dataset.i === i));
+  });
+
+  // ---- Gallery ----
+  const GALLERY = ['live_tracking.png','tracking_success.png','route_map.png','track_insights.png','ocr.png',
+    'geo_check_in.png','log_miles_step1.png','home_screen_loaded.png','approvals_pending.png','hardware_events.png',
+    'check_in_history.png','saved_tracks_journeys_tab.png','payments_history_screen.png','create_event_screen.png',
+    'booking_history_screen.png','trip_history_screen.png','root_guard_detected.png','track_detail.png',
+    'payables_list_matrix.png','events_history_screen.png'];
+  const galleryEl = document.getElementById('gallery');
+  GALLERY.forEach(name => {
+    const img = document.createElement('img');
+    img.src = `assets/screenshots/${name}`; img.alt = name.replace(/_/g,' ').replace('.png',''); img.loading = 'lazy';
+    galleryEl.appendChild(img);
+  });
+
+  // ---- Lightbox ----
+  const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lightboxImg');
+  document.addEventListener('click', e => {
+    if (e.target.matches('.gallery img')) { lbImg.src = e.target.src; lb.classList.add('on'); }
+    else if (e.target.closest('.lightbox')) { lb.classList.remove('on'); }
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+
+  // ---- Hero phone carousel ----
+  const screen = document.getElementById('demoScreen');
+  const imgs = [...screen.querySelectorAll('img')];
+  const dotsEl = document.getElementById('demoDots');
+  imgs.forEach((_, i) => { const d = document.createElement('span'); if (i===0) d.className='on'; d.dataset.i=i; dotsEl.appendChild(d); });
+  const dots = [...dotsEl.children];
+  let cur = 0;
+  function show(n) { imgs[cur].classList.remove('on'); dots[cur].classList.remove('on'); cur = (n+imgs.length)%imgs.length; imgs[cur].classList.add('on'); dots[cur].classList.add('on'); }
+  let timer = setInterval(() => show(cur+1), 2600);
+  dotsEl.addEventListener('click', e => { const d = e.target.closest('span'); if (!d) return; clearInterval(timer); show(+d.dataset.i); timer = setInterval(() => show(cur+1), 2600); });
+
+  // ---- Reveal ----
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ---- Hide video cards whose source 404s (graceful if a clip wasn't recorded) ----
+  document.querySelectorAll('#videoGrid video').forEach(v => {
+    v.addEventListener('error', () => { const c = v.closest('.video-card'); if (c) c.style.display = 'none'; }, true);
+  });
+</script>
+
+</body>
+</html>
