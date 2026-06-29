@@ -1,0 +1,3 @@
+# Local AI-agent config (machine-local, not part of the site)
+.claude/
+.DS_Store
