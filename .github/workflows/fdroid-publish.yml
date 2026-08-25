@@ -44,50 +44,54 @@ jobs:
           fdroid --version
           python3 -c "import androguard; print('androguard', androguard.__version__)"
 
-      - name: Fetch the latest signed APK for each app
+      - name: Fetch the signed FOSS APK for each app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p fdroid/repo
-          # Each app publishes exactly one FOSS-flavour APK per release.
-          # Kursi and Mileway split gms/noGms; we take noGms. PaymentsLab has one flavour.
-          # Matched with startswith/endswith rather than a regex: jq string literals
-          # reject the \. escape a naive pattern needs, and this is unambiguous anyway.
+          # Take the EXACT asset "<App>-<tag>.apk". That is the one publish-fdroid.yml
+          # signs out of band from the FOSS flavour.
+          #
+          # Do NOT glob. Every release also carries per-variant assets from
+          # github-release.yml such as "<App>-<tag>-gms-release-unsigned.apk", which are
+          # both unsigned AND the Google-services flavour. A prefix match sorts those
+          # first and silently publishes the wrong build.
           fetch() {
-            repo="$1"; prefix="$2"
+            repo="$1"
             tag=$(gh release view -R "darkpandawarrior/$repo" --json tagName -q .tagName)
-            asset=$(gh release view -R "darkpandawarrior/$repo" --json assets \
-                      -q ".assets[].name | select(startswith(\"$prefix\")) | select(endswith(\".apk\"))" | head -1)
-            if [ -z "$asset" ]; then
-              echo "::error::no asset starting with $prefix on $repo@$tag"
+            asset="${repo}-${tag}.apk"
+            if ! gh release view -R "darkpandawarrior/$repo" --json assets \
+                   -q '.assets[].name' | grep -qx "$asset"; then
+              echo "::error::$repo@$tag has no signed asset named $asset."
+              echo "::error::Run publish-fdroid on that tag before publishing the repo."
               return 1
             fi
             echo "$repo $tag -> $asset"
             gh release download -R "darkpandawarrior/$repo" "$tag" -p "$asset" -D fdroid/repo --clobber
           }
-          # These names come from each repo's publish-fdroid workflow, which signs
-          # the APK out of band. The per-variant assets from github-release.yml are
-          # UNSIGNED and must never be picked up here.
-          fetch Kursi       'Kursi-v'
-          fetch Mileway     'Mileway-v'
-          fetch PaymentsLab 'PaymentsLab-v'
+          fetch Kursi
+          fetch Mileway
+          fetch PaymentsLab
           ls -lh fdroid/repo/
 
-      - name: Reject unsigned APKs
+      - name: Verify every APK carries OUR signing certificate
         run: |
           set -euo pipefail
+          # "Is it signed" is not enough: it must be signed by the key pinned in the
+          # metadata, or installs fail on upgrade and the repo is serving a stranger's build.
+          EXPECT=e3cd9ed25baaa6db5501621a2a7399edc0878022f9b64b5d95446db0348dd19c
           fail=0
           for apk in fdroid/repo/*.apk; do
-            if apksigner verify --print-certs "$apk" >/dev/null 2>&1; then
-              echo "ok     $(basename "$apk")"
+            got=$(apksigner verify --print-certs "$apk" 2>/dev/null \
+                  | grep -oiE '[0-9a-f]{64}' | head -1 || true)
+            if [ "$got" = "$EXPECT" ]; then
+              echo "ok       $(basename "$apk")"
             else
-              echo "::error::UNSIGNED, refusing to publish: $(basename "$apk")"
+              echo "::error::WRONG OR MISSING SIGNATURE: $(basename "$apk") -> ${got:-unsigned}"
               fail=1
             fi
           done
-          # An unsigned APK cannot be installed. Publishing one produces a repo
-          # that looks healthy and serves an app nobody can install.
           exit $fail
 
       - name: Import each app's authored metadata
