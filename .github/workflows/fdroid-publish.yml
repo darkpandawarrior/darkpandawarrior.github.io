@@ -46,13 +46,15 @@ jobs:
           mkdir -p fdroid/repo
           # Each app publishes exactly one FOSS-flavour APK per release.
           # Kursi and Mileway split gms/noGms; we take noGms. PaymentsLab has one flavour.
+          # Matched with startswith/endswith rather than a regex: jq string literals
+          # reject the \. escape a naive pattern needs, and this is unambiguous anyway.
           fetch() {
-            repo="$1"; pattern="$2"
+            repo="$1"; prefix="$2"
             tag=$(gh release view -R "darkpandawarrior/$repo" --json tagName -q .tagName)
             asset=$(gh release view -R "darkpandawarrior/$repo" --json assets \
-                      -q ".assets[].name | select(test(\"$pattern\"))" | head -1)
+                      -q ".assets[].name | select(startswith(\"$prefix\")) | select(endswith(\".apk\"))" | head -1)
             if [ -z "$asset" ]; then
-              echo "::error::no asset matching /$pattern/ on $repo@$tag"
+              echo "::error::no asset starting with $prefix on $repo@$tag"
               return 1
             fi
             echo "$repo $tag -> $asset"
@@ -61,9 +63,9 @@ jobs:
           # These names come from each repo's publish-fdroid workflow, which signs
           # the APK out of band. The per-variant assets from github-release.yml are
           # UNSIGNED and must never be picked up here.
-          fetch Kursi       '^Kursi-v[0-9].*\.apk$'
-          fetch Mileway     '^Mileway-v[0-9].*\.apk$'
-          fetch PaymentsLab '^PaymentsLab-v[0-9].*\.apk$'
+          fetch Kursi       'Kursi-v'
+          fetch Mileway     'Mileway-v'
+          fetch PaymentsLab 'PaymentsLab-v'
           ls -lh fdroid/repo/
 
       - name: Reject unsigned APKs
