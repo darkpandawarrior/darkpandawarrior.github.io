@@ -33,10 +33,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install fdroidserver
+        # From PyPI, NOT apt. Ubuntu's fdroidserver package pins an androguard too
+        # old to parse a resources.arsc produced by AGP 8/9: it dies with
+        # "ResParserError: res1 must be zero!" on every modern APK.
         run: |
+          set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq fdroidserver apksigner
+          sudo apt-get install -y -qq apksigner aapt libmagic1
+          pip install --upgrade 'fdroidserver'
           fdroid --version
+          python3 -c "import androguard; print('androguard', androguard.__version__)"
 
       - name: Fetch the latest signed APK for each app
         env:
@@ -99,6 +105,8 @@ jobs:
         working-directory: fdroid
         run: |
           set -euo pipefail
+          mkdir -p repo/icons
+          cp ../fdroid-icon.png repo/icons/icon.png 2>/dev/null || cp icon.png repo/icons/icon.png
           fdroid update --create-metadata --pretty --verbose
           test -f repo/index-v2.json || { echo "::error::fdroid update produced no index"; exit 1; }
 
