@@ -90,6 +90,12 @@ jobs:
           # that looks healthy and serves an app nobody can install.
           exit $fail
 
+      - name: Import each app's authored metadata
+        working-directory: fdroid
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/import-metadata.py
+
       - name: Materialise the index signing key
         env:
           KS_B64: ${{ secrets.FDROID_INDEX_KEYSTORE_B64 }}
