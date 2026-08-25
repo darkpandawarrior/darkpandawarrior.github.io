@@ -1,0 +1,131 @@
+name: Publish F-Droid repo
+
+# Builds darkpandawarrior.github.io/fdroid from the signed APKs attached to each
+# app repo's GitHub Release, then deploys the whole site (portfolio + F-Droid
+# repo) as a Pages artifact.
+#
+# Pages source must be set to "GitHub Actions", not "Deploy from a branch".
+# APKs are downloaded at build time and never committed: GitHub rejects blobs
+# over 100MB and one of these APKs is 115MB.
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+  repository_dispatch:
+    types: [app-released]
+  schedule:
+    - cron: '0 4 * * 1'   # Monday, catches releases cut without a dispatch
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fdroidserver
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fdroidserver apksigner
+          fdroid --version
+
+      - name: Fetch the latest signed APK for each app
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p fdroid/repo
+          # Each app publishes exactly one FOSS-flavour APK per release.
+          # Kursi and Mileway split gms/noGms; we take noGms. PaymentsLab has one flavour.
+          fetch() {
+            repo="$1"; pattern="$2"
+            tag=$(gh release view -R "darkpandawarrior/$repo" --json tagName -q .tagName)
+            asset=$(gh release view -R "darkpandawarrior/$repo" --json assets \
+                      -q ".assets[].name | select(test(\"$pattern\"))" | head -1)
+            if [ -z "$asset" ]; then
+              echo "::error::no asset matching /$pattern/ on $repo@$tag"
+              return 1
+            fi
+            echo "$repo $tag -> $asset"
+            gh release download -R "darkpandawarrior/$repo" "$tag" -p "$asset" -D fdroid/repo --clobber
+          }
+          fetch Kursi       'noGms-release.*\.apk$'
+          fetch Mileway     'noGms-release.*\.apk$'
+          fetch PaymentsLab 'release.*\.apk$'
+          ls -lh fdroid/repo/
+
+      - name: Reject unsigned APKs
+        run: |
+          set -euo pipefail
+          fail=0
+          for apk in fdroid/repo/*.apk; do
+            if apksigner verify --print-certs "$apk" >/dev/null 2>&1; then
+              echo "ok     $(basename "$apk")"
+            else
+              echo "::error::UNSIGNED, refusing to publish: $(basename "$apk")"
+              fail=1
+            fi
+          done
+          # An unsigned APK cannot be installed. Publishing one produces a repo
+          # that looks healthy and serves an app nobody can install.
+          exit $fail
+
+      - name: Materialise the index signing key
+        env:
+          KS_B64: ${{ secrets.FDROID_INDEX_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.FDROID_INDEX_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$KS_B64" || { echo "::error::FDROID_INDEX_KEYSTORE_B64 is not set"; exit 1; }
+          echo "$KS_B64" | base64 -d > fdroid/keystore.p12
+          {
+            echo "keystorepass: '$KS_PASS'"
+            echo "keypass: '$KS_PASS'"
+          } >> fdroid/config.yml
+
+      - name: Build and sign the index
+        working-directory: fdroid
+        run: |
+          set -euo pipefail
+          fdroid update --create-metadata --pretty --verbose
+          test -f repo/index-v2.json || { echo "::error::fdroid update produced no index"; exit 1; }
+
+      - name: Assemble the Pages artifact
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          # The existing portfolio site, minus build plumbing.
+          rsync -a --exclude '.git' --exclude '_site' --exclude 'fdroid' \
+                --exclude '.github' --exclude 'graphify-out' ./ _site/
+          mkdir -p _site/fdroid
+          cp -r fdroid/repo _site/fdroid/repo
+          cp fdroid/README.md _site/fdroid/index.md 2>/dev/null || true
+          rm -f _site/fdroid/keystore.p12
+          # The keystore must never reach the published site.
+          if find _site -name '*.p12' -o -name '*.jks' | grep -q .; then
+            echo "::error::a keystore leaked into the artifact"; exit 1
+          fi
+          du -sh _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
