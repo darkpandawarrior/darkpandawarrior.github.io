@@ -1,0 +1,28 @@
+# F-Droid repository configuration for darkpandawarrior.github.io/fdroid
+#
+# The index is signed by the `index` key in the keystore that CI materialises
+# from the FDROID_INDEX_KEYSTORE_B64 secret. That key is NOT the key the APKs
+# are signed with: the APK key lives in each app repo, so a compromise of this
+# site's CI cannot forge an app update.
+#
+# APKs are never committed to git. GitHub rejects any blob over 100MB and one
+# of these APKs is 115MB. CI downloads them from each app's GitHub Release at
+# build time and ships them in the Pages artifact instead.
+
+repo_url: https://darkpandawarrior.github.io/fdroid/repo
+repo_name: darkpandawarrior
+repo_description: >-
+  Apps built and signed by Siddharth Pandalai. Source for every app is on
+  GitHub and linked from its listing. Builds are made in GitHub Actions from
+  a tagged commit.
+repo_icon: icon.png
+
+archive_older: 0
+
+keystore: keystore.p12
+repo_keyalias: index
+keydname: CN=darkpandawarrior F-Droid Repo, O=darkpandawarrior, L=Pune, S=Maharashtra, C=IN
+
+# ponytail: only the newest build per app is published, so the Pages site stays
+# well under the 1GB limit. If version history matters later, set archive_older
+# to 3 and publish fdroid/archive as a second repo.
