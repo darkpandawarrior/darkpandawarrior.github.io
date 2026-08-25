@@ -58,9 +58,12 @@ jobs:
             echo "$repo $tag -> $asset"
             gh release download -R "darkpandawarrior/$repo" "$tag" -p "$asset" -D fdroid/repo --clobber
           }
-          fetch Kursi       'noGms-release.*\.apk$'
-          fetch Mileway     'noGms-release.*\.apk$'
-          fetch PaymentsLab 'release.*\.apk$'
+          # These names come from each repo's publish-fdroid workflow, which signs
+          # the APK out of band. The per-variant assets from github-release.yml are
+          # UNSIGNED and must never be picked up here.
+          fetch Kursi       '^Kursi-v[0-9].*\.apk$'
+          fetch Mileway     '^Mileway-v[0-9].*\.apk$'
+          fetch PaymentsLab '^PaymentsLab-v[0-9].*\.apk$'
           ls -lh fdroid/repo/
 
       - name: Reject unsigned APKs
