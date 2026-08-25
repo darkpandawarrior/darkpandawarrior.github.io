@@ -90,6 +90,59 @@ jobs:
           # that looks healthy and serves an app nobody can install.
           exit $fail
 
+      - name: Import each app's metadata and store copy
+        # Without this, `fdroid update --create-metadata` invents metadata from the
+        # APK alone: no licence, and crucially NO AntiFeatures, so an app bundling
+        # proprietary SDKs would install with no warning shown. The authored ymls
+        # live in each app repo, so pull them in here.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p fdroid/metadata
+          import_app() {
+            repo="$1"; appid="$2"
+            gh api "repos/darkpandawarrior/$repo/contents/metadata/$appid.yml" \
+              --jq .content | base64 -d > "/tmp/$appid.src.yml"
+            # Keep only the fields a local repo consumes. Binaries/Builds/AllowedAPKSigningKeys
+            # are for a fdroiddata submission and mean nothing here.
+            python3 - "$appid" <<'PYEOF'
+          import sys, yaml, os
+          appid = sys.argv[1]
+          src = yaml.safe_load(open(f'/tmp/{appid}.src.yml')) or {}
+          keep = ('License','AuthorName','AuthorEmail','WebSite','SourceCode',
+                  'IssueTracker','Translation','Changelog','Categories',
+                  'AntiFeatures','Donate','Liberapay','Name','AutoName')
+          out = {k: src[k] for k in keep if k in src}
+          with open(f'fdroid/metadata/{appid}.yml','w') as f:
+              yaml.safe_dump(out, f, sort_keys=False, allow_unicode=True)
+          print(appid, '->', ', '.join(out))
+          PYEOF
+            # Descriptions, changelogs and images, in the layout fdroid reads.
+            d="fdroid/metadata/$appid/en-US"; mkdir -p "$d"
+            tmp=$(mktemp -d)
+            git clone -q --depth 1 --filter=blob:none --sparse \
+              "https://github.com/darkpandawarrior/$repo.git" "$tmp"
+            git -C "$tmp" sparse-checkout set fastlane/metadata/android/en-US
+            fl="$tmp/fastlane/metadata/android/en-US"
+            [ -f "$fl/short_description.txt" ] && cp "$fl/short_description.txt" "$d/summary.txt"
+            [ -f "$fl/full_description.txt" ]  && cp "$fl/full_description.txt"  "$d/description.txt"
+            [ -f "$fl/title.txt" ]             && cp "$fl/title.txt"             "$d/name.txt"
+            [ -d "$fl/images" ]                && cp -r "$fl/images/." "$d/"
+            [ -d "$fl/changelogs" ]            && cp -r "$fl/changelogs" "$d/changelogs"
+            rm -rf "$tmp"
+          }
+          import_app Kursi       com.kursi.android
+          import_app Mileway     com.mileway
+          import_app PaymentsLab com.paymentslab.app
+          find fdroid/metadata -maxdepth 2 | sort
+
+      - name: Import each app's authored metadata
+        working-directory: fdroid
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/import-metadata.py
+
       - name: Materialise the index signing key
         env:
           KS_B64: ${{ secrets.FDROID_INDEX_KEYSTORE_B64 }}
