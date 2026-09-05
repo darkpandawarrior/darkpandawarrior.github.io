@@ -70,9 +70,9 @@ jobs:
             echo "$repo $tag -> $asset"
             gh release download -R "darkpandawarrior/$repo" "$tag" -p "$asset" -D fdroid/repo --clobber
           }
-          fetch Kursi
-          fetch Mileway
-          fetch PaymentsLab
+          fetch Gaddi
+          fetch Doori
+          fetch PaymentsLab-KMP
           ls -lh fdroid/repo/
 
       - name: Verify every APK carries OUR signing certificate
