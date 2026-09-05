@@ -50,17 +50,24 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p fdroid/repo
-          # Take the EXACT asset "<App>-<tag>.apk". That is the one publish-fdroid.yml
-          # signs out of band from the FOSS flavour.
+          # Take the EXACT asset "<AssetPrefix>-<tag>.apk". That is the one
+          # publish-fdroid.yml signs out of band from the FOSS flavour, and asset
+          # filenames are release history: they still carry each app's PRE-RENAME
+          # name (Kursi, Mileway, PaymentsLab — verified against real releases; the
+          # app repo's own PaymentsLab-KMP-prefixed workflow edit is uncommitted,
+          # not yet live) even though the GitHub repo is now Gaddi / Doori /
+          # PaymentsLab-KMP. Renaming the assets themselves is a later, separate
+          # decision.
           #
           # Do NOT glob. Every release also carries per-variant assets from
-          # github-release.yml such as "<App>-<tag>-gms-release-unsigned.apk", which are
-          # both unsigned AND the Google-services flavour. A prefix match sorts those
-          # first and silently publishes the wrong build.
+          # github-release.yml such as "<AssetPrefix>-<tag>-gms-release-unsigned.apk",
+          # which are both unsigned AND the Google-services flavour. A prefix match
+          # sorts those first and silently publishes the wrong build.
           fetch() {
             repo="$1"
+            asset_prefix="$2"
             tag=$(gh release view -R "darkpandawarrior/$repo" --json tagName -q .tagName)
-            asset="${repo}-${tag}.apk"
+            asset="${asset_prefix}-${tag}.apk"
             if ! gh release view -R "darkpandawarrior/$repo" --json assets \
                    -q '.assets[].name' | grep -qx "$asset"; then
               echo "::error::$repo@$tag has no signed asset named $asset."
@@ -70,9 +77,9 @@ jobs:
             echo "$repo $tag -> $asset"
             gh release download -R "darkpandawarrior/$repo" "$tag" -p "$asset" -D fdroid/repo --clobber
           }
-          fetch Kursi
-          fetch Mileway
-          fetch PaymentsLab
+          fetch Gaddi Kursi
+          fetch Doori Mileway
+          fetch PaymentsLab-KMP PaymentsLab
           ls -lh fdroid/repo/
 
       - name: Verify every APK carries OUR signing certificate
