@@ -20,9 +20,9 @@ Verify the fingerprint on first add:
 
 | App | Package | Licence | Notes |
 |---|---|---|---|
-| Kursi | `com.kursi.android` | GPL-3.0-or-later | Bluffing card game. No proprietary dependencies. |
-| Mileway | `com.mileway` | GPL-3.0-or-later | Mileage and expense tracker. Ships Google Play Services components for location and on-device text recognition. |
-| PaymentsLab | `com.paymentslab.app` | GPL-3.0-or-later | Payments integration lab. Bundles proprietary payment gateway SDKs by design. |
+| Gaddi | `com.kursi.android` | GPL-3.0-or-later | Bluffing card game. No proprietary dependencies. |
+| Doori | `com.mileway` | GPL-3.0-or-later | Mileage and expense tracker. Ships Google Play Services components for location and on-device text recognition. |
+| PaymentsLab-KMP | `com.paymentslab.app` | GPL-3.0-or-later | Payments integration lab. Bundles proprietary payment gateway SDKs by design. |
 
 Apps carrying proprietary dependencies are tagged with the `NonFreeDep`
 anti-feature, so the F-Droid client shows the warning before you install.

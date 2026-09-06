@@ -11,9 +11,9 @@ mean nothing to a local repo.
 """
 import base64, json, os, shutil, subprocess, sys, tempfile
 
-APPS = [("Kursi", "com.kursi.android"),
-        ("Mileway", "com.mileway"),
-        ("PaymentsLab", "com.paymentslab.app")]
+APPS = [("Gaddi", "com.kursi.android"),
+        ("Doori", "com.mileway"),
+        ("PaymentsLab-KMP", "com.paymentslab.app")]
 
 KEEP = ("License", "AuthorName", "AuthorEmail", "WebSite", "SourceCode",
         "IssueTracker", "Translation", "Changelog", "Categories",
