@@ -53,10 +53,13 @@ jobs:
           # Take the EXACT asset "<AssetPrefix>-<tag>.apk". That is the one
           # publish-fdroid.yml signs out of band from the FOSS flavour, and asset
           # filenames are release history: they still carry each app's PRE-RENAME
-          # name (Kursi, Mileway, PaymentsLab — verified against real releases; the
-          # app repo's own PaymentsLab-KMP-prefixed workflow edit is uncommitted,
-          # not yet live) even though the GitHub repo is now Gaddi / Doori /
-          # PaymentsLab-KMP. Renaming the assets themselves is a later, separate
+          # name (Kursi, Mileway, PaymentsLab — verified against each repo's latest
+          # real release) even though the GitHub repo is now Gaddi / Doori /
+          # PaymentsLab-KMP. PaymentsLab-KMP's own workflow already produces
+          # "PaymentsLab-KMP-<tag>.apk" (committed 2026-09-05), but no release has
+          # shipped under that name yet, so its current fetch below still targets
+          # the old prefix — flip it to PaymentsLab-KMP the next time that repo cuts
+          # a release. Renaming the other two repos' assets is a later, separate
           # decision.
           #
           # Do NOT glob. Every release also carries per-variant assets from
