@@ -131,6 +131,10 @@ jobs:
           cp ../fdroid-icon.png repo/icons/icon.png 2>/dev/null || cp icon.png repo/icons/icon.png
           fdroid update --create-metadata --pretty --verbose
           test -f repo/index-v2.json || { echo "::error::fdroid update produced no index"; exit 1; }
+          # Replace fdroidserver's stock index.html (alt text "QR: test", no app list)
+          # and write the /fdroid/ landing page from the same template.
+          python3 tools/make-pages.py
+          test -f index.html && test -f repo/index.html || { echo "::error::make-pages.py wrote no pages"; exit 1; }
 
       - name: Assemble the Pages artifact
         run: |
@@ -141,7 +145,10 @@ jobs:
                 --exclude '.github' --exclude 'graphify-out' ./ _site/
           mkdir -p _site/fdroid
           cp -r fdroid/repo _site/fdroid/repo
-          cp fdroid/README.md _site/fdroid/index.md 2>/dev/null || true
+          # /fdroid/ must serve a real index.html: Pages does not render index.md here.
+          cp fdroid/index.html _site/fdroid/index.html
+          test -f _site/fdroid/index.html || { echo "::error::no /fdroid/ index"; exit 1; }
+          test -f _site/404.html || { echo "::error::no 404.html"; exit 1; }
           rm -f _site/fdroid/keystore.p12
           # The keystore must never reach the published site.
           if find _site -name '*.p12' -o -name '*.jks' | grep -q .; then
