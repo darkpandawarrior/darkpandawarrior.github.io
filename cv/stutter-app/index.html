@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>STUTTER</title>
 		<style>
 html, body, #canvas {
@@ -89,6 +89,45 @@ body {
 	text-align: center;
 	z-index: 1;
 }
+
+#gate {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 1rem;
+	padding: 1.5rem;
+	text-align: center;
+	background: #0b0f0d;
+	font-family: system-ui, sans-serif;
+	z-index: 2;
+}
+
+#gate p {
+	margin: 0;
+	max-width: 32rem;
+	line-height: 1.4;
+	color: #e4e4e7;
+}
+
+#gate .note {
+	color: #a1a1aa;
+	font-size: 0.9rem;
+}
+
+#gate button {
+	font: inherit;
+	font-weight: 600;
+	padding: 0.8rem 1.6rem;
+	min-height: 44px;
+	border: 0;
+	border-radius: 0.5rem;
+	background: #3ddc84;
+	color: #0b0f0d;
+	cursor: pointer;
+}
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
@@ -102,6 +141,13 @@ body {
 		<noscript>
 			Your browser does not support JavaScript.
 		</noscript>
+
+		<div id="gate">
+			<p><strong>STUTTER</strong> is a first-person time-loop game that runs in your browser.</p>
+			<p>Playing downloads about <strong>217 MB</strong> (a 40 MB engine and a 178 MB game pack). Nothing is downloaded until you press the button.</p>
+			<p class="note">Desktop only. It needs a keyboard and mouse, and a lot of memory, so it will not run well on a phone.</p>
+			<button id="gate-start" type="button">Download 217 MB and play</button>
+		</div>
 
 		<div id="status">
 			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
@@ -167,6 +213,7 @@ const engine = new Engine(GODOT_CONFIG);
 	});
 
 	if (missing.length !== 0) {
+		document.getElementById('gate').remove();
 		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
 			let serviceWorkerRegistrationPromise;
 			try {
@@ -198,6 +245,15 @@ const engine = new Engine(GODOT_CONFIG);
 			displayFailureNotice(missingMsg + missing.join('\n'));
 		}
 	} else {
+		// Click-to-play gate: the 217 MB (wasm + pack) is fetched only after the visitor opts in.
+		const gate = document.getElementById('gate');
+		document.getElementById('gate-start').addEventListener('click', () => {
+			gate.remove();
+			startDownload();
+		}, { once: true });
+	}
+
+	function startDownload() {
 		setStatusMode('progress');
 		// split-pack.mjs: the pack ships as parts under GitHub's 100 MB per-file
 		// cap and is stitched into one Blob here; the engine only ever sees mainPack.

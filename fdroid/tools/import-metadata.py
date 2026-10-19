@@ -65,6 +65,15 @@ def main():
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
 
+        # Fallback icon: the app repo's fastlane images win; otherwise use an icon
+        # committed in fdroid/app-art/<appid>.png (if any), so the listing has one.
+        have = os.path.join(d, "icon.png")
+        spare = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "app-art", f"{appid}.png")
+        if not os.path.isfile(have) and os.path.isfile(spare):
+            shutil.copy(spare, have)
+        elif not os.path.isfile(have):
+            print(f"  {appid}: no icon (add fastlane/.../images/icon.png to {repo} or fdroid/app-art/{appid}.png)")
+
     if failed:
         print("::error::" + "; ".join(failed))
         sys.exit(1)
