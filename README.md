@@ -2,15 +2,15 @@
 
 The GitHub Pages site for my account. It holds three things, and none of them is the portfolio itself.
 
-The portfolio lives at https://siddharth-pandalai.vercel.app. This repo used to be its home, so the root page (`index.html`), `404.html` and `mileway/index.html` are now redirects that send old links there. Nothing else in the repo is hand-edited.
+The portfolio lives at https://siddharth-pandalai.vercel.app. This repo used to be its home, so the root page (`index.html`) and `mileway/index.html` are now redirects that send old links there, and `404.html` points lost visitors there too. Nothing else in the repo is hand-edited.
 
 ## What is in here
 
 | Path | What it is | Who writes it |
 |---|---|---|
 | `fdroid/` | Source for my F-Droid repository: the add-repo instructions, two Python tools, an icon. 44 KB. | Me, by hand |
-| `cv/` | Heavy static assets the portfolio links to: the Wasm demos of my apps, screenshots, showcase films, scans. 483 MB. | A workflow in [cv-siddharth](https://github.com/darkpandawarrior/cv-siddharth), never by hand |
-| `index.html`, `404.html`, `mileway/` | Redirects and a not-found page | Me |
+| `cv/` | Heavy static assets the portfolio links to: the Wasm builds of my apps, screenshots, short films, audio, 3D models and the magazine cover images. 483 MB. | A workflow in [cv-siddharth](https://github.com/darkpandawarrior/cv-siddharth), never by hand |
+| `index.html`, `mileway/index.html`, `404.html` | Two redirects and a not-found page with links back to the portfolio and the F-Droid repo | Me |
 
 The `cv/` folder is why the repo is slow to clone. The portfolio keeps these files out of its own repo and its `publish-assets.yml` workflow copies them here on every push to `main`. Those commits are the ones titled `chore(cv): sync heavy assets from ...`. If you want to change something under `cv/`, change it in cv-siddharth or the next sync overwrites it.
 
