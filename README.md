@@ -9,7 +9,7 @@ The portfolio lives at https://siddharth-pandalai.vercel.app. This repo used to 
 | Path | What it is | Who writes it |
 |---|---|---|
 | `fdroid/` | Source for my F-Droid repository: the add-repo instructions, two Python tools, an icon. 44 KB. | Me, by hand |
-| `cv/` | Heavy static assets the portfolio links to: the Wasm builds of my apps, screenshots, short films, audio, 3D models and the magazine cover images. 483 MB. | A workflow in [cv-siddharth](https://github.com/darkpandawarrior/cv-siddharth), never by hand |
+| `cv/` | Heavy static assets the portfolio links to: the Wasm builds of my apps, screenshots, videos, audio, 3D models and the magazine cover images. 483 MB. | A workflow in [cv-siddharth](https://github.com/darkpandawarrior/cv-siddharth), never by hand |
 | `index.html`, `mileway/index.html`, `404.html` | Two redirects and a not-found page with links back to the portfolio and the F-Droid repo | Me |
 
 The `cv/` folder is why the repo is slow to clone. The portfolio keeps these files out of its own repo and its `publish-assets.yml` workflow copies them here on every push to `main`. Those commits are the ones titled `chore(cv): sync heavy assets from ...`. If you want to change something under `cv/`, change it in cv-siddharth or the next sync overwrites it.
